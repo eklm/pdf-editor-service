@@ -1,0 +1,22 @@
+{
+    "textblocks": [
+        {
+            "text": "hello",
+            "font": "Arial",
+            "fontSize": 20,
+            "color": "FF000000",
+            "page": 1,
+            "x": 100,
+            "y": 100
+        },
+        {
+            "text": "hello",
+            "font": "Arial",
+            "fontSize": 20,
+            "color": "FF000000",
+            "page": 2,
+            "x": 100,
+            "y": 100
+        }
+    ]
+}
