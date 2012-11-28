@@ -29,7 +29,8 @@ object PdfEditor {
                 Integer.parseInt(block.color.substring(0, 2), 16), 
                 Integer.parseInt(block.color.substring(2, 4), 16), 
                 Integer.parseInt(block.color.substring(4, 6), 16), 
-                Integer.parseInt(block.color.substring(6, 8), 16))
+                (if (block.color.size > 6) {Integer.parseInt(block.color.substring(6, 8), 16)} else {255})
+            )
 
             cb.setFontAndSize(bf, round(block.fontSize / k))
             cb.setColorFill(color)
