@@ -28,7 +28,8 @@ object PdfEditor extends Controller {
     val out = new FileOutputStream(outputPath)
     out.write(result)
     out.close
-    Ok
+    val pdfUrl = "/generated_pdfs/" + formId + ".pdf"
+    Ok(Json.toJson(Map("pdf_url" -> pdfUrl)))
   }   
 
 }
