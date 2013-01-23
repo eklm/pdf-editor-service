@@ -10,8 +10,9 @@ import java.io._
 object PdfEditor extends Controller {
 
   def getPdf(formId: String) = Action {request=>
-    val textBlocksJson = request.body.asJson.get \ "textblocks"
-    val textBlocks = textBlocksJson.as[List[JsValue]].map {tb=>
+    val content = request.body.asJson.get
+
+    val textBlocks = (content \ "textblocks").as[List[JsValue]].map {tb=>
       new TextBlock(
         (tb \ "text").as[String],
         (tb \ "font").as[String],
@@ -22,8 +23,20 @@ object PdfEditor extends Controller {
         (tb \ "y").as[Int]
       )
     }
+
+    val imageBlocks = (content \ "imageblocks").as[List[JsValue]].map {ib=>
+      new ImageBlock(
+        (ib \ "data").as[String],
+        (ib \ "width").as[Int],
+        (ib \ "height").as[Int],
+        (ib \ "page").as[Int],
+        (ib \ "x").as[Int],
+        (ib \ "y").as[Int]
+      )
+    }
+
     val pdfPath = new File(new File(Play.configuration.getString("original_pdfs_path").get), formId + ".pdf")
-    val result = models.PdfEditor.writeTextBlocks(pdfPath.getAbsolutePath, textBlocks)
+    val result = models.PdfEditor.addBlocks(pdfPath.getAbsolutePath, textBlocks, imageBlocks)
     val outputPath = new File(new File(Play.configuration.getString("generated_pdfs_path").get), formId + ".pdf")
     val out = new FileOutputStream(outputPath)
     out.write(result)

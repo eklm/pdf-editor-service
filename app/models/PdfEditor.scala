@@ -10,17 +10,19 @@ import java.io._
 import play.api.Play.current
 import play.api._
 import scala.math._
+import org.apache.commons.codec.binary.Base64
 
 object PdfEditor {
 
-    def writeTextBlocks(pdfPath: String, textBlocks: List[TextBlock]) = {
+    def addBlocks(pdfPath: String, textBlocks: List[TextBlock], imageBlocks: List[ImageBlock]) = {
         val reader = new PdfReader(pdfPath)
         val output = new ByteArrayOutputStream()
         val stamper = new PdfStamper(reader, output)
+
         textBlocks.foreach {block =>
+            val cb = stamper.getOverContent(block.page)
             var lineNumber = 0
             block.text.lines.foreach {line => 
-                val cb = stamper.getOverContent(block.page)
                 cb.beginText()
                 val bf = BaseFont.createFont(Play.configuration.getString("fonts_path").get + "/" + block.font + ".ttf", BaseFont.IDENTITY_H, true)
                 val rec = reader.getCropBox(block.page)
@@ -44,6 +46,22 @@ object PdfEditor {
                 cb.endText()
             }
         }
+
+        imageBlocks.foreach {block =>
+            val cb = stamper.getOverContent(block.page)
+            val imageBytes = Base64.decodeBase64(block.data)
+            val pdfImage = com.itextpdf.text.Image.getInstance(java.awt.Toolkit.getDefaultToolkit.createImage(imageBytes), null)
+
+            val rec = reader.getCropBox(block.page)
+            val width = rec.getWidth()
+            val scale = Play.configuration.getInt("page_width").get / width
+
+            val xx = round(block.x / scale)
+            val yy = round(rec.getHeight() - block.y / scale - block.height / scale)
+
+            cb.addImage(pdfImage, block.width / scale, 0, 0, block.height/scale, xx, yy)
+        }
+
         stamper.close()
         output.toByteArray
     }
