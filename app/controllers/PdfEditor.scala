@@ -9,6 +9,8 @@ import java.io._
 
 object PdfEditor extends Controller {
 
+  val dataUrlRegexp = "data:(.*),(.*)".r
+  
   def getPdf(formId: String) = Action {request=>
     val content = request.body.asJson.get
 
@@ -25,8 +27,11 @@ object PdfEditor extends Controller {
     }
 
     val imageBlocks = (content \ "imageblocks").as[List[JsValue]].map {ib=>
+      val imageDataUrl = (ib \ "imageDataUrl").as[String]
+      val dataUrlRegexp(format, imageData) = imageDataUrl
+
       new ImageBlock(
-        (ib \ "data").as[String],
+        imageData,
         (ib \ "width").as[Int],
         (ib \ "height").as[Int],
         (ib \ "page").as[Int],
