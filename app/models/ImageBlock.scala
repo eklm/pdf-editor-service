@@ -1,7 +1,7 @@
 package models
 
 class ImageBlock(
-  val data: String,
+  val url: String,
   val width: Int,
   val height: Int,
   val page: Int,

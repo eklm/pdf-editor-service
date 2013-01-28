@@ -8,8 +8,6 @@ import play.api.Play.current
 import java.io._
 
 object PdfEditor extends Controller {
-
-  val dataUrlRegexp = "data:(.*),(.*)".r
   
   def getPdf(formId: String) = Action {request=>
     val content = request.body.asJson.get
@@ -28,10 +26,8 @@ object PdfEditor extends Controller {
           (blockData \ "y").as[Int]
         )
       } else if(blockType == "imageblock") {
-        val imageDataUrl = (blockData \ "imageDataUrl").as[String]
-        val dataUrlRegexp(format, imageData) = imageDataUrl
         new ImageBlock(
-          imageData,
+          (blockData \ "url").as[String],
           (blockData \ "width").as[Int],
           (blockData \ "height").as[Int],
           (blockData \ "page").as[Int],

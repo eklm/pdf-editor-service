@@ -10,7 +10,7 @@ import java.io._
 import play.api.Play.current
 import play.api._
 import scala.math._
-import org.apache.commons.codec.binary.Base64
+import java.net.URL
 
 object PdfEditor {
 
@@ -51,8 +51,7 @@ object PdfEditor {
                 }
 
                 case imageBlock: ImageBlock => {
-                    val imageBytes = Base64.decodeBase64(imageBlock.data)
-                    val pdfImage = com.itextpdf.text.Image.getInstance(java.awt.Toolkit.getDefaultToolkit.createImage(imageBytes), null)
+                    val pdfImage = com.itextpdf.text.Image.getInstance(new URL(imageBlock.url))
 
                     val xx = round(imageBlock.x / k)
                     val yy = round(rec.getHeight() - imageBlock.y / k - imageBlock.height / k)
