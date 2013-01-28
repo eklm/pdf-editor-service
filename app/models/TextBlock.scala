@@ -8,4 +8,4 @@ class TextBlock(
     val page: Int,
     val x: Int,
     val y: Int
-)
+) extends Block

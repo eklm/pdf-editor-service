@@ -14,52 +14,52 @@ import org.apache.commons.codec.binary.Base64
 
 object PdfEditor {
 
-    def addBlocks(pdfPath: String, textBlocks: List[TextBlock], imageBlocks: List[ImageBlock]) = {
+    def addBlocks(pdfPath: String, blocks: List[Block]) = {
         val reader = new PdfReader(pdfPath)
         val output = new ByteArrayOutputStream()
         val stamper = new PdfStamper(reader, output)
 
-        textBlocks.foreach {block =>
+        blocks.foreach {block =>
             val cb = stamper.getOverContent(block.page)
-            var lineNumber = 0
-            block.text.lines.foreach {line => 
-                cb.beginText()
-                val bf = BaseFont.createFont(Play.configuration.getString("fonts_path").get + "/" + block.font + ".ttf", BaseFont.IDENTITY_H, true)
-                val rec = reader.getCropBox(block.page)
-                val width = rec.getWidth()
-                val k = Play.configuration.getInt("page_width").get / width
-
-                val color = new BaseColor(
-                    Integer.parseInt(block.color.substring(0, 2), 16), 
-                    Integer.parseInt(block.color.substring(2, 4), 16), 
-                    Integer.parseInt(block.color.substring(4, 6), 16), 
-                    (if (block.color.size > 6) {Integer.parseInt(block.color.substring(6, 8), 16)} else {255})
-                )
-
-                cb.setFontAndSize(bf, round(block.fontSize / k))
-                cb.setColorFill(color)
-                val xx = round(block.x / k)
-                val yy = round(rec.getHeight() - block.y / k - block.fontSize / k)
-                cb.setTextMatrix(xx, yy - round(1.0*(block.fontSize+4)*lineNumber/k))
-                lineNumber += 1
-                cb.showText(line)
-                cb.endText()
-            }
-        }
-
-        imageBlocks.foreach {block =>
-            val cb = stamper.getOverContent(block.page)
-            val imageBytes = Base64.decodeBase64(block.data)
-            val pdfImage = com.itextpdf.text.Image.getInstance(java.awt.Toolkit.getDefaultToolkit.createImage(imageBytes), null)
-
             val rec = reader.getCropBox(block.page)
             val width = rec.getWidth()
-            val scale = Play.configuration.getInt("page_width").get / width
+            val k = Play.configuration.getInt("page_width").get / width
 
-            val xx = round(block.x / scale)
-            val yy = round(rec.getHeight() - block.y / scale - block.height / scale)
+            block match {
+                case textBlock: TextBlock => {
+                    var lineNumber = 0
+                    textBlock.text.lines.foreach {line => 
+                        cb.beginText()
+                        val bf = BaseFont.createFont(Play.configuration.getString("fonts_path").get + "/" + textBlock.font + ".ttf", BaseFont.IDENTITY_H, true)
 
-            cb.addImage(pdfImage, block.width / scale, 0, 0, block.height/scale, xx, yy)
+                        val color = new BaseColor(
+                            Integer.parseInt(textBlock.color.substring(0, 2), 16), 
+                            Integer.parseInt(textBlock.color.substring(2, 4), 16), 
+                            Integer.parseInt(textBlock.color.substring(4, 6), 16), 
+                            (if (textBlock.color.size > 6) {Integer.parseInt(textBlock.color.substring(6, 8), 16)} else {255})
+                        )
+
+                        cb.setFontAndSize(bf, round(textBlock.fontSize / k))
+                        cb.setColorFill(color)
+                        val xx = round(textBlock.x / k)
+                        val yy = round(rec.getHeight() - textBlock.y / k - textBlock.fontSize / k)
+                        cb.setTextMatrix(xx, yy - round(1.0*(textBlock.fontSize+4)*lineNumber/k))
+                        lineNumber += 1
+                        cb.showText(line)
+                        cb.endText()
+                    }
+                }
+
+                case imageBlock: ImageBlock => {
+                    val imageBytes = Base64.decodeBase64(imageBlock.data)
+                    val pdfImage = com.itextpdf.text.Image.getInstance(java.awt.Toolkit.getDefaultToolkit.createImage(imageBytes), null)
+
+                    val xx = round(imageBlock.x / k)
+                    val yy = round(rec.getHeight() - imageBlock.y / k - imageBlock.height / k)
+
+                    cb.addImage(pdfImage, imageBlock.width / k, 0, 0, imageBlock.height/k, xx, yy)                    
+                }
+            }
         }
 
         stamper.close()
