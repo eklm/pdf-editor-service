@@ -15,7 +15,7 @@ object PdfEditor extends Controller {
     val blocks = (content \ "blocks").as[List[JsValue]].map {blockData=>
       val blockType = (blockData \ "type").as[String]
 
-      (if (blockType == "textblock") {
+      (if (blockType == "text") {
         new TextBlock(
           (blockData \ "text").as[String],
           (blockData \ "font").as[String],
@@ -25,7 +25,7 @@ object PdfEditor extends Controller {
           (blockData \ "x").as[Int],
           (blockData \ "y").as[Int]
         )
-      } else if(blockType == "imageblock") {
+      } else if(blockType == "image") {
         new ImageBlock(
           (blockData \ "url").as[String],
           (blockData \ "width").as[Int],
