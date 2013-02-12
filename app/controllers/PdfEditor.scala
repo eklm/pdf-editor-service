@@ -9,8 +9,11 @@ import java.io._
 
 object PdfEditor extends Controller {
   
-  def getPdf(formId: String) = Action {request=>
+  def generatePdf = Action {request=>
     val content = request.body.asJson.get
+
+    val pdfUrl = (content \ "pdfUrl").as[String]
+    val referenceWidth = (content \ "referenceWidth").as[Int]
 
     val blocks = (content \ "blocks").as[List[JsValue]].map {blockData=>
       val blockType = (blockData \ "type").as[String]
@@ -35,18 +38,20 @@ object PdfEditor extends Controller {
           (blockData \ "y").as[Int]
         )
       }).asInstanceOf[Block]
-
     }
 
-
-    val pdfPath = new File(new File(Play.configuration.getString("original_pdfs_path").get), formId + ".pdf")
-    val result = models.PdfEditor.addBlocks(pdfPath.getAbsolutePath, blocks)
-    val outputPath = new File(new File(Play.configuration.getString("generated_pdfs_path").get), formId + ".pdf")
+    val result = models.PdfEditor.addBlocks(pdfUrl, blocks, referenceWidth)
+    val filename = java.security.MessageDigest.getInstance("SHA-1").digest(result).map("%02x" format _).mkString
+    val outputPath = new File(new File(Play.configuration.getString("generated_pdfs_path").get), filename + ".pdf")
     val out = new FileOutputStream(outputPath)
     out.write(result)
     out.close
-    val pdfUrl = "/generated_pdfs/" + formId + ".pdf"
-    Ok(Json.toJson(Map("pdf_url" -> pdfUrl)))
-  }   
+    val newPdfUrl = "/pdfeditor/generated_pdfs/" + filename + ".pdf"
+    Ok(Json.toJson(Map("pdf_url" -> newPdfUrl)))
+  }
+
+  def getPdf(filename: String) = Action{request=>
+    Ok.sendFile(new java.io.File(Play.configuration.getString("generated_pdfs_path").get, filename), inline=true)
+  }
 
 }

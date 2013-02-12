@@ -14,8 +14,8 @@ import java.net.URL
 
 object PdfEditor {
 
-  def addBlocks(pdfPath: String, blocks: List[Block]) = {
-    val reader = new PdfReader(pdfPath)
+  def addBlocks(pdfUrl: String, blocks: List[Block], referenceWidth: Int) = {
+    val reader = new PdfReader(new URL(pdfUrl))
     val output = new ByteArrayOutputStream()
     val stamper = new PdfStamper(reader, output)
 
@@ -23,7 +23,7 @@ object PdfEditor {
       val cb = stamper.getOverContent(block.page)
       val rec = reader.getCropBox(block.page)
       val width = rec.getWidth()
-      val k = Play.configuration.getInt("page_width").get / width
+      val scale = referenceWidth * 1./ width
 
       block match {
         case textBlock: TextBlock => {
@@ -39,11 +39,11 @@ object PdfEditor {
                   (if (textBlock.color.size > 6) {Integer.parseInt(textBlock.color.substring(6, 8), 16)} else {255})
               )
 
-              cb.setFontAndSize(bf, round(textBlock.fontSize / k))
+              cb.setFontAndSize(bf, round(textBlock.fontSize / scale))
               cb.setColorFill(color)
-              val xx = round(textBlock.x / k)
-              val yy = round(rec.getHeight() - textBlock.y / k - textBlock.fontSize / k)
-              cb.setTextMatrix(xx, yy - round(1.0*(textBlock.fontSize+4)*lineNumber/k))
+              val x = round(textBlock.x / scale)
+              val y = round(rec.getHeight() - textBlock.y / scale - (textBlock.fontSize) / scale - (textBlock.fontSize+4)*lineNumber/scale)
+              cb.setTextMatrix(x, y )
               lineNumber += 1
               cb.showText(line)
               cb.endText()
@@ -53,10 +53,10 @@ object PdfEditor {
         case imageBlock: ImageBlock => {
           val pdfImage = com.itextpdf.text.Image.getInstance(new URL(imageBlock.url))
 
-          val xx = round(imageBlock.x / k)
-          val yy = round(rec.getHeight() - imageBlock.y / k - imageBlock.height / k)
+          val x = round(imageBlock.x / scale)
+          val y = round(rec.getHeight() - imageBlock.y / scale - imageBlock.height / scale)
 
-          cb.addImage(pdfImage, imageBlock.width / k, 0, 0, imageBlock.height/k, xx, yy)
+          cb.addImage(pdfImage, round(imageBlock.width /scale), 0, 0, round(imageBlock.height/scale), x, y)
         }
       }
     }
