@@ -11,6 +11,7 @@ Request example:
       "pdfUrl":"http://somehost/pdfs/1520045.pdf",
       "blocks":[
         {
+          "font": "Arial",
           "fontSize":22,
           "color":"FF0000",
           "type":"text",
