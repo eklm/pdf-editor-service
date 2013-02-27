@@ -42,4 +42,5 @@ Get modified pdf by url provided in response.
 
 ## Deployment
 This is a play 2.0 application. After installing scala and play, service can be started by
-  play start
+
+    play start
