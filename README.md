@@ -5,6 +5,7 @@ A simple web service for editing pdfs, which allows to add text and images. It u
 Add text/image blocks to pdf.
 
 Request example:
+
     {
       "referenceWidth":1000,
       "pdfUrl":"http://somehost/pdfs/1520045.pdf",
@@ -31,6 +32,7 @@ Request example:
     }
 
 Response example:
+
     {
       "pdf_url":"/pdfeditor/generated_pdfs/65858f01e7ccd8fd337df0482a422ac6124fcfe3.pdf"
     }
