@@ -14,7 +14,7 @@ import java.net.URL
 
 object PdfEditor {
 
-  def addBlocks(pdfUrl: String, blocks: List[Block], referenceWidth: Int) = {
+  def addBlocks(pdfUrl: String, blocks: List[Block], referenceWidth: Int, print: Boolean) = {
     val reader = new PdfReader(new URL(pdfUrl))
     val output = new ByteArrayOutputStream()
     val stamper = new PdfStamper(reader, output)
@@ -59,6 +59,10 @@ object PdfEditor {
           cb.addImage(pdfImage, round(imageBlock.width /scale), 0, 0, round(imageBlock.height/scale), x, y)
         }
       }
+    }
+
+    if (print) {
+      stamper.addJavaScript("this.print();");
     }
 
     stamper.close()

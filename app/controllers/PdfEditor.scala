@@ -14,6 +14,7 @@ object PdfEditor extends Controller {
 
     val pdfUrl = (content \ "pdfUrl").as[String]
     val referenceWidth = (content \ "referenceWidth").as[Int]
+    val print = (content \ "print").asOpt[Boolean].getOrElse(false)
 
     val blocks = (content \ "blocks").as[List[JsValue]].map {blockData=>
       val blockType = (blockData \ "type").as[String]
@@ -40,7 +41,7 @@ object PdfEditor extends Controller {
       }).asInstanceOf[Block]
     }
 
-    val result = models.PdfEditor.addBlocks(pdfUrl, blocks, referenceWidth)
+    val result = models.PdfEditor.addBlocks(pdfUrl, blocks, referenceWidth, print)
     val filename = java.security.MessageDigest.getInstance("SHA-1").digest(result).map("%02x" format _).mkString
     val outputPath = new File(new File(Play.configuration.getString("generated_pdfs_path").get), filename + ".pdf")
     val out = new FileOutputStream(outputPath)
