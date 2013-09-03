@@ -5,4 +5,5 @@ target
 tmp
 .history
 dist
-generated_pdfs
+generated_pdfs/*.pdf
+RUNNING_PID
